@@ -1,0 +1,14 @@
+[Unit]
+Description=VXLAN FDB Management
+Documentation=man:bridge(8)
+After=network-online.target netplan-apply.service systemd-networkd.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/vxlan-fdb.sh
+RemainAfterExit=yes
+TimeoutStartSec=30
+
+[Install]
+WantedBy=multi-user.target

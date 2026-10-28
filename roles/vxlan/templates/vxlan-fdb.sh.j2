@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Managed by Ansible
+log_error() {
+    echo "ERROR: $1" >&2
+}
+
+interface_exists() {
+    ip link show "$1" >/dev/null 2>&1
+}
+
+{% for vni in vxlan_ids %}
+VXLAN_IFACE="vx{{ vni }}"
+
+if ! interface_exists "$VXLAN_IFACE"; then
+     log_error "VXLAN interface $VXLAN_IFACE does not exist - skipping FDB configuration"
+else
+     if [ {{ vxlan_remote_vteps | length }} -eq 0 ]; then
+         log_error "No remote VTEPs configured for $VXLAN_IFACE - FDB entries not added"
+     else
+         {% for rip in vxlan_remote_vteps %}
+         if ! bridge fdb append 00:00:00:00:00:00 dev "$VXLAN_IFACE" dst {{ rip }} 2>/dev/null; then
+             log_error "Failed to add FDB entry for {{ rip }} on $VXLAN_IFACE"
+         fi
+         {% endfor %}
+     fi
+fi
+{% endfor %}
+
+exit 0

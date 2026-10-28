@@ -1,0 +1,6 @@
+---
+- name: Configure VXLAN overlays with Netplan and a systemd FDB service
+  hosts: vxlan
+  become: true
+  roles:
+    - vxlan

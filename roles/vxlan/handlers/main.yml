@@ -1,0 +1,19 @@
+---
+- name: Apply netplan configuration
+  ansible.builtin.command: netplan apply
+  become: true
+  changed_when: true
+  register: netplan_result
+  failed_when: netplan_result.rc not in [0, 100]
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+  become: true
+
+- name: Restart vxlan-fdb service
+  ansible.builtin.systemd:
+    name: vxlan-fdb.service
+    state: restarted
+    enabled: true
+  become: true
